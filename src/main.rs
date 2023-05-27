@@ -9,10 +9,12 @@ use tracing_subscriber::{
 use tracing::{debug, info};
 use sqlx::{
     Sqlite,
-    SqlitePool,
     sqlite::SqlitePoolOptions,
     migrate::{Migrator, MigrateDatabase}
 };
+
+mod http;
+mod models;
 
 
 #[tokio::main]
