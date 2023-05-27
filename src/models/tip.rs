@@ -50,7 +50,7 @@ impl Tip{
 
     pub async fn create(pool: &SqlitePool, new_tip: NewTip)
             -> Result<Tip, sqlx::Error>{
-        tracing::info!("Data: {:?}", new_poll);
+        tracing::info!("Data: {:?}", new_tip);
         let sql = "INSERT INTO tips (category_id, text, published
                    VALUES ($1, $2, $3) RETURNING *;";
         query(sql)
@@ -61,7 +61,7 @@ impl Tip{
             .fetch_one(pool)
             .await
     }
-    pub async fn read(pool: &SqlitePool, id: i64) -> Result<Tip<Tip>, sqlx::Error>{
+    pub async fn read(pool: &SqlitePool, id: i64) -> Result<Option<Tip>, sqlx::Error>{
         let sql = "SELECT * FROM tips WHERE id = $1";
         query(sql)
             .bind(id)

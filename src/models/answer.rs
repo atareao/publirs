@@ -48,7 +48,7 @@ impl Answer{
         self.isok
     }
 
-    pub async fn create(pool: &SqlitePool, new_poll: NewAnswer7g)
+    pub async fn create(pool: &SqlitePool, new_poll: NewAnswer)
             -> Result<Answer, sqlx::Error>{
         tracing::info!("Data: {:?}", new_poll);
         let sql = "INSERT INTO answers (reto_id, text, isok
