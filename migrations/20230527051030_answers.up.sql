@@ -1,7 +1,6 @@
-CREATE TABLE IF NOT EXISTS options (
+CREATE TABLE IF NOT EXISTS answer (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    norder INTEGER,
     reto_id INTEGER,
-    option STRING,
+    text STRING,
     isok BOOLEAN
 );
