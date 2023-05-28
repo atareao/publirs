@@ -12,6 +12,7 @@ use sqlx::{
     sqlite::SqlitePoolOptions,
     migrate::{Migrator, MigrateDatabase}
 };
+use dotenv::dotenv;
 
 mod http;
 mod models;
@@ -19,6 +20,7 @@ mod models;
 
 #[tokio::main]
 async fn main(){
+    dotenv().ok();
     let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_|"DEBUG".to_string());
     tracing_subscriber::registry()
         .with(EnvFilter::from_str(&log_level).unwrap())
@@ -27,10 +29,12 @@ async fn main(){
     info!("Log level: {}", &log_level);
     let db_url = env::var("DB_URL").unwrap_or_else(|_|"publirs.db".to_string());
     info!("Database URL: {}", &db_url);
-    let port = env::var("PORT").unwrap_or_else(|_|"8080".to_string());
-    debug!("Port: {}", &port);
+    let port = env::var("PORT").unwrap_or_else(|_|"8080".to_string()).parse::<u16>().unwrap();
+    info!("Port: {}", &port);
     let enviroment = env::var("ENVIRONMENT").unwrap_or_else(|_|"DEVELOPMENT".to_string());
-    debug!("Environment: {}", &port);
+    info!("Environment: {}", &port);
+    let token = env::var("TOKEN").expect("TOKEN is mandatory");
+    debug!("Environment: {}", &token);
 
     if !Sqlite::database_exists(&db_url).await.unwrap(){
         Sqlite::create_database(&db_url).await.unwrap();
@@ -67,5 +71,5 @@ async fn main(){
         .unwrap();
 
     tracing::info!("🚀 Server started successfully");
-    //http::serve(configuration, pool).await.unwrap();
+    http::serve(&pool, &token, port).await.unwrap();
 }

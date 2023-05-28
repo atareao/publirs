@@ -3,7 +3,7 @@ use serde_json::json;
 use tracing::{info, error};
 
 #[derive(Debug)]
-struct Telegram {
+pub struct Telegram {
     token: String,
 }
 

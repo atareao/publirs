@@ -67,6 +67,14 @@ impl Poll{
             .await
     }
 
+    pub async fn read_not_published(pool: &SqlitePool) -> Result<Option<Poll>, sqlx::Error>{
+        let sql = "SELECT * FROM polls WHERE published = FALSE order by id";
+        query(sql)
+            .map(Self::from_row)
+            .fetch_optional(pool)
+            .await
+    }
+
     pub async fn read_all(pool: &SqlitePool) -> Result<Vec<Poll>, sqlx::Error>{
         let sql = "SELECT * FROM polls";
         query(sql)
