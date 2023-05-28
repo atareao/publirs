@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS answer (
+CREATE TABLE IF NOT EXISTS answers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    reto_id INTEGER,
+    poll_id INTEGER,
     text STRING,
     isok BOOLEAN
 );
