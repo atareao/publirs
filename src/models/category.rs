@@ -1,7 +1,5 @@
 use serde::{Serialize, Deserialize};
 use sqlx::{sqlite::{SqlitePool, SqliteRow}, query, Row};
-use std::fmt::{self, Display};
-use chrono::{DateTime, NaiveDate, Utc, NaiveDateTime};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Category{
