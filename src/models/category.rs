@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 use sqlx::{sqlite::{SqlitePool, SqliteRow}, query, Row};
+use super::error::CustomError;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Category{
@@ -43,7 +44,7 @@ impl Category{
     }
 
     pub async fn create(pool: &SqlitePool, new_category: NewCategory)
-            -> Result<Category, sqlx::Error>{
+            -> Result<Category, CustomError>{
         tracing::info!("Data: {:?}", new_category);
         let sql = "INSERT INTO categories (name, chat_id, thread_id) 
                    VALUES ($1, $2, $3) RETURNING *;";
@@ -54,25 +55,34 @@ impl Category{
             .map(Self::from_row)
             .fetch_one(pool)
             .await
+            .map_err(|e| {
+                CustomError::ServerError(e.to_string())
+            })
     }
-    pub async fn read(pool: &SqlitePool, id: i64) -> Result<Option<Category>, sqlx::Error>{
+    pub async fn read(pool: &SqlitePool, id: i64) -> Result<Category, CustomError>{
         let sql = "SELECT * FROM categories WHERE id = $1";
         query(sql)
             .bind(id)
             .map(Self::from_row)
-            .fetch_optional(pool)
+            .fetch_one(pool)
             .await
+            .map_err(|_| {
+                CustomError::NotFound
+            })
     }
 
-    pub async fn read_all(pool: &SqlitePool) -> Result<Vec<Category>, sqlx::Error>{
+    pub async fn read_all(pool: &SqlitePool) -> Result<Vec<Category>, CustomError>{
         let sql = "SELECT * FROM categories";
         query(sql)
             .map(Self::from_row)
             .fetch_all(pool)
             .await
+            .map_err(|_| {
+                CustomError::NotFound
+            })
     }
 
-    pub async fn update(pool: &SqlitePool, category: Category) -> Result<Category, sqlx::Error>{
+    pub async fn update(pool: &SqlitePool, category: Category) -> Result<Category, CustomError>{
         let sql = "UPDATE categories SET name = $2, chat_id = $3, thread_id = $4
                     FROM categories WHERE id = $1 RETURNING * ;";
         query(sql)
@@ -83,15 +93,21 @@ impl Category{
             .map(Self::from_row)
             .fetch_one(pool)
             .await
+            .map_err(|e|{
+                CustomError::ServerError(e.to_string())
+            })
     }
 
-    pub async fn delete(pool: &SqlitePool, id: i64) -> Result<Category, sqlx::Error>{
+    pub async fn delete(pool: &SqlitePool, id: i64) -> Result<Category, CustomError>{
         let sql = "DELETE from categories WHERE id = $1 RETURNING * ;";
         query(sql)
             .bind(id)
             .map(Self::from_row)
             .fetch_one(pool)
             .await
+            .map_err(|e|{
+                CustomError::ServerError(e.to_string())
+            })
     }
 
 }

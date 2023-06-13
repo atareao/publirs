@@ -3,3 +3,4 @@ pub mod category;
 pub mod poll;
 pub mod telegram;
 pub mod tip;
+pub mod error;
