@@ -1,6 +1,7 @@
-use std::{sync::Arc, net::{SocketAddr, Ipv4Addr}};
 mod publish;
+mod category;
 
+use std::{sync::Arc, net::{SocketAddr, Ipv4Addr}};
 use axum::Server;
 use sqlx::SqlitePool;
 use tower_http::trace::TraceLayer;
@@ -32,5 +33,5 @@ pub async fn serve(pool: &SqlitePool, token: &str, port: u16) -> anyhow::Result<
         .await
         .map_err(|_err| anyhow::anyhow!("Can't init")
     )
-    
 }
+

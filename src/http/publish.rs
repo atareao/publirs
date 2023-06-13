@@ -19,17 +19,13 @@ use crate::models::{
 use super::AppState;
 use tracing::info;
 
-
-
-
-
-
-
 pub fn router() -> Router<Arc<AppState>>{
     Router::new()
         .route("/api/v1/publish_poll",
             routing::get(publish_poll)
         )
+        .route("/api/v1/category",
+            routing::get)
 }
 
 async fn publish_poll(
