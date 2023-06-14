@@ -18,6 +18,12 @@ pub struct NewAnswer{
     isok: bool
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct NewBasicAnswer{
+    pub text: String,
+    pub isok: bool
+}
+
 fn get_default_isok() -> bool{
     false
 }

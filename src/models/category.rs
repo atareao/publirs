@@ -71,6 +71,19 @@ impl Category{
             })
     }
 
+    pub async fn search(pool: &SqlitePool, name: &str) -> Result<Category, CustomError>{
+        let sql = "SELECT * FROM categories WHERE name = $1";
+        query(sql)
+            .bind(name)
+            .map(Self::from_row)
+            .fetch_one(pool)
+            .await
+            .map_err(|_| {
+                CustomError::NotFound
+            })
+    }
+
+
     pub async fn read_all(pool: &SqlitePool) -> Result<Vec<Category>, CustomError>{
         let sql = "SELECT * FROM categories";
         query(sql)
