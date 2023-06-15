@@ -10,9 +10,21 @@ use axum::{
 
 use crate::{
     http::AppState,
-    models::{poll::{
-        Poll,
-        NewPoll}, error::CustomError}};
+    models::{
+        category::Category,
+        poll::{
+            Poll,
+            NewPoll,
+            NewPollWithAnswers,
+            PollWithAnswers
+        },
+        answer::{
+            Answer,
+            NewAnswer
+        },
+        error::CustomError
+    }
+};
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
@@ -55,7 +67,7 @@ async fn read_all(
     State(app_state): State<Arc<AppState>>,
 ) -> impl IntoResponse{
     match Poll::read_all(&app_state.pool).await{
-        Ok(polls) => (StatusCode::OK, Json(serde_json::to_value(categories).unwrap())),
+        Ok(polls) => (StatusCode::OK, Json(serde_json::to_value(polls).unwrap())),
         Err(e)  => get_error(StatusCode::NOT_FOUND, format!("Error: {}", e)),
     }
 }
@@ -76,16 +88,48 @@ fn get_error(status_code: StatusCode, error: String) -> (StatusCode, Json<serde_
 
 async fn create(
     State(app_state): State<Arc<AppState>>,
-    Json(new_channel): Json<NewPoll>,
+    Json(new_pollwa): Json<NewPollWithAnswers>,
 ) -> impl IntoResponse{
     tracing::info!("Por aquí");
-    match Poll::create(&app_state.pool, new_channel).await{
-        Ok(channel) => (StatusCode::OK, Json(channel)).into_response(),
-        Err(e) => {
-            tracing::error!("Error: {}", e);
-            YTPError::NotFound.into_response()
-        }
+    let category_id = match Category::search(
+        &app_state.pool,
+        &new_pollwa.category)
+        .await{
+            Ok(category) => category.get_id(),
+            Err(e) => return e.into_response(),
+        };
+    let new_poll =  NewPoll {
+        category_id,
+        question: new_pollwa.question
+    };
+    let poll = match Poll::create(
+        &app_state.pool,
+        new_poll)
+    .await{
+            Ok(poll) => poll,
+            Err(e) => return e.into_response(),
+    };
+    let mut answers = Vec::new();
+    for item in new_pollwa.answers{
+        let new_answer = NewAnswer{
+            poll_id: poll.get_id(),
+            text: item.text,
+            isok: item.isok
+        };
+        let answer = match Answer::create(&app_state.pool, new_answer).await{
+            Ok(answer) => answer,
+            Err(e) => return e.into_response(),
+        };
+        answers.push(answer);
     }
+    let pwa = PollWithAnswers{
+        id: poll.get_id(),
+        category_id: poll.get_category_id(),
+        question: poll.get_question().to_string(),
+        published: poll.get_published(),
+        answers,
+    };
+    (StatusCode::OK, Json(pwa)).into_response()
 }
 
 async fn update(
