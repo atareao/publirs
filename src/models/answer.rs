@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use sqlx::{sqlite::{SqlitePool, SqliteRow}, query, Row};
-use super::error::CustomError
+use super::error::CustomError;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Answer{
