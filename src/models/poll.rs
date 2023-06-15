@@ -1,7 +1,9 @@
 use serde::{Serialize, Deserialize};
 use sqlx::{sqlite::{SqlitePool, SqliteRow}, query, Row};
-use super::{answer::{Answer, NewAnswer, NewBasicAnswer}, category::Category};
-use super::error::CustomError;
+use super::{
+    answer::{Answer, NewBasicAnswer},
+    error::CustomError
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Poll{
@@ -20,39 +22,22 @@ pub struct NewPoll{
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NewPollWithAnswers{
-    category: String,
-    question: String,
-    answers: Vec<NewBasicAnswer>,
+    pub category: String,
+    pub question: String,
+    pub answers: Vec<NewBasicAnswer>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PollWithAnswers{
+    id: i64,
+    category_id: i64,
+    question: String,
+    published: bool,
+    pub answers: Vec<Answer>,
+}
 
 fn get_default_published() -> bool{
     false
-}
-
-impl NewBasicAnswer{
-    pub async fn create(pool: &SqlitePool, new_pollwa: NewPollWithAnswers)
-            -> Result<Poll, CustomError>{
-        tracing::info!("Data: {:?}", new_pollwa);
-        let category_id = Category::search(pool, &new_pollwa.category)
-            .await?
-            .get_id();
-        let new_poll =  NewPoll {
-            category_id,
-            question: new_pollwa.question
-        };
-        let poll = Poll::create(pool, new_poll).await?;
-        for item in new_pollwa.answers{
-            let new_answer = NewAnswer{
-                poll_id: poll.get_id(),
-                text: item.text,
-                isok: item.isok
-            };
-            Answer::create(&pool, new_answer).await?;
-        }
-        Ok(poll)
-    }
-
 }
 
 impl Poll{
