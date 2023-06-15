@@ -4,8 +4,10 @@ use axum::{
     Json
 };
 use serde_json::json;
+use std::fmt;
 
 
+#[derive(Debug)]
 pub enum CustomError {
     BadRequest,
     NotFound,
@@ -13,6 +15,22 @@ pub enum CustomError {
     OtherError(String),
 }
 
+impl fmt::Display for CustomError {
+    // This trait requires `fmt` with this exact signature.
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Write strictly the first element into the supplied output
+        // stream: `f`. Returns `fmt::Result` which indicates whether the
+        // operation succeeded or failed. Note that `write!` uses syntax which
+        // is very similar to `println!`.
+        match self{
+            Self::BadRequest =>  write!(f, "Bad request"),
+            Self::NotFound =>  write!(f, "Not found"),
+            Self::ServerError(e) =>  write!(f, "Server error: {}", e),
+            Self::OtherError(e) =>  write!(f, "Server error: {}", e),
+            _ => write!(f, "Unknown error"),
+        }
+    }
+}
 impl IntoResponse for CustomError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
