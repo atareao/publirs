@@ -37,17 +37,9 @@ async fn read(
     State(app_state): State<Arc<AppState>>,
     Path(category_id): Path<i64>,
 ) -> impl IntoResponse{
-    let category = Category::read(&app_state.pool, category_id).await
-        .map_err(|e| {
-                let error_response = serde_json::json!({
-                    "status": "fail",
-                    "message": format!("Database error: {}", e),
-                });
-                (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-            }).unwrap();
-    match category{
-        Some(channel) => (StatusCode::OK, Json(serde_json::to_value(channel).unwrap())).into_response(),
-        None => CustomError::NotFound.into_response(),
+    match Category::read(&app_state.pool, category_id).await{
+        Ok(category) => (StatusCode::OK, Json(serde_json::to_value(category).unwrap())).into_response(),
+        Err(e) => e.into_response(),
     }
 }
 
@@ -55,11 +47,13 @@ async fn read_all(
     State(app_state): State<Arc<AppState>>,
 ) -> impl IntoResponse{
     match Category::read_all(&app_state.pool).await{
-        Ok(categories) => (StatusCode::OK, Json(serde_json::to_value(categories).unwrap())),
-        Err(e)  => get_error(StatusCode::NOT_FOUND, format!("Error: {}", e)),
+        Ok(categories) => (StatusCode::OK, Json(serde_json::to_value(categories).unwrap())).into_response(),
+        Err(e)  => {
+            tracing::error!("Error: {:?}", e);
+            e.into_response()
+        },
     }
 }
-
 
 fn get_error(status_code: StatusCode, error: String) -> (StatusCode, Json<serde_json::Value>){
     let status = if status_code == StatusCode::OK{
