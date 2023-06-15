@@ -122,7 +122,4 @@ impl Category{
                 CustomError::ServerError(e.to_string())
             })
     }
-
 }
-
-

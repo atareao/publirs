@@ -81,32 +81,41 @@ impl Poll{
                 CustomError::ServerError(e.to_string())
             })
     }
-    pub async fn read(pool: &SqlitePool, id: i64) -> Result<Option<Poll>, sqlx::Error>{
+    pub async fn read(pool: &SqlitePool, id: i64) -> Result<Option<Poll>, CustomError>{
         let sql = "SELECT * FROM polls WHERE id = $1";
         query(sql)
             .bind(id)
             .map(Self::from_row)
             .fetch_optional(pool)
             .await
+            .map_err(|_| {
+                CustomError::NotFound
+            })
     }
 
-    pub async fn read_not_published(pool: &SqlitePool) -> Result<Option<Poll>, sqlx::Error>{
+    pub async fn read_not_published(pool: &SqlitePool) -> Result<Option<Poll>, CustomError>{
         let sql = "SELECT * FROM polls WHERE published = FALSE order by id";
         query(sql)
             .map(Self::from_row)
             .fetch_optional(pool)
             .await
+            .map_err(|_| {
+                CustomError::NotFound
+            })
     }
 
-    pub async fn read_all(pool: &SqlitePool) -> Result<Vec<Poll>, sqlx::Error>{
+    pub async fn read_all(pool: &SqlitePool) -> Result<Vec<Poll>, CustomError>{
         let sql = "SELECT * FROM polls";
         query(sql)
             .map(Self::from_row)
             .fetch_all(pool)
             .await
+            .map_err(|_| {
+                CustomError::NotFound
+            })
     }
 
-    pub async fn update(pool: &SqlitePool, poll: Poll) -> Result<Poll, sqlx::Error>{
+    pub async fn update(pool: &SqlitePool, poll: Poll) -> Result<Poll, CustomError>{
         let sql = "UPDATE polls SET category_id = $2, question = $3
                     FROM polls WHERE id = $1 RETURNING * ;";
         query(sql)
@@ -116,17 +125,20 @@ impl Poll{
             .map(Self::from_row)
             .fetch_one(pool)
             .await
+            .map_err(|e| {
+                CustomError::ServerError(e.to_string())
+            })
     }
 
-    pub async fn delete(pool: &SqlitePool, id: i64) -> Result<Poll, sqlx::Error>{
+    pub async fn delete(pool: &SqlitePool, id: i64) -> Result<Poll, CustomError>{
         let sql = "DELETE from polls WHERE id = $1 RETURNING * ;";
         query(sql)
             .bind(id)
             .map(Self::from_row)
             .fetch_one(pool)
             .await
+            .map_err(|e| {
+                CustomError::ServerError(e.to_string())
+            })
     }
-
 }
-
-
