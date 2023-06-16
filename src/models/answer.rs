@@ -29,6 +29,16 @@ fn get_default_isok() -> bool{
     false
 }
 
+impl NewAnswer{
+    pub fn new(poll_id: i64, text: String, isok: bool) -> Self{
+        Self{
+            poll_id,
+            text,
+            isok,
+        }
+    }
+}
+
 impl Answer{
     fn from_row(row: SqliteRow) -> Self{
         Self{
