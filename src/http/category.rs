@@ -10,9 +10,14 @@ use axum::{
 
 use crate::{
     http::AppState,
-    models::{category::{
-        Category,
-        NewCategory}, error::CustomError}};
+    models::{
+        category::{
+            Category,
+            NewCategory
+        },
+        error::CustomError
+    }
+};
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
@@ -55,29 +60,15 @@ async fn read_all(
     }
 }
 
-fn get_error(status_code: StatusCode, error: String) -> (StatusCode, Json<serde_json::Value>){
-    let status = if status_code == StatusCode::OK{
-        "ok"
-    }else{
-        "ko"
-    };
-    let error_response = serde_json::json!({
-        "status": status,
-        "message": format!("Error: {}", error),
-    });
-    (StatusCode::NOT_FOUND, Json(error_response))
-}
-
 async fn create(
     State(app_state): State<Arc<AppState>>,
     Json(new_channel): Json<NewCategory>,
 ) -> impl IntoResponse{
-    tracing::info!("Por aquí");
     match Category::create(&app_state.pool, new_channel).await{
         Ok(channel) => (StatusCode::OK, Json(channel)).into_response(),
         Err(e) => {
             tracing::error!("Error: {}", e);
-            YTPError::NotFound.into_response()
+            e.into_response()
         }
     }
 }
@@ -88,7 +79,10 @@ async fn update(
 ) -> impl IntoResponse{
     match Category::update(&app_state.pool, channel).await{
         Ok(channel) => return(StatusCode::OK, Json(channel)).into_response(),
-        Err(_) => YTPError::NotFound.into_response()
+        Err(e) => {
+            tracing::error!("Error: {}", e);
+            e.into_response()
+        }
     }
 }
 
@@ -98,7 +92,10 @@ async fn delete(
 ) -> impl IntoResponse{
     match Category::delete(&app_state.pool, channel_id).await{
         Ok(channel) => return(StatusCode::OK, Json(channel)).into_response(),
-        Err(_) => YTPError::NotFound.into_response()
+        Err(e) => {
+            tracing::error!("Error: {},", e);
+            e.into_response()
+        }
     }
 }
 
