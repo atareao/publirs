@@ -40,6 +40,26 @@ fn get_default_published() -> bool{
     false
 }
 
+impl NewPoll{
+    pub fn new(category_id: i64, question: String) -> Self{
+        Self{
+            category_id,
+            question,
+        }
+    }
+}
+impl PollWithAnswers{
+    pub fn new(id: i64, category_id: i64, question: String, published: bool, answers: Vec<Answer>) -> Self{
+        Self{
+            id,
+            category_id,
+            question,
+            published,
+            answers,
+        }
+    }
+}
+
 impl Poll{
     fn from_row(row: SqliteRow) -> Self{
         Self{
