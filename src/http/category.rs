@@ -10,13 +10,10 @@ use axum::{
 
 use crate::{
     http::AppState,
-    models::{
-        category::{
+    models::category::{
             Category,
             NewCategory
-        },
-        error::CustomError
-    }
+        }
 };
 
 pub fn router() -> Router<Arc<AppState>> {
