@@ -88,7 +88,7 @@ impl Tip{
             })
     }
 
-    pub async fn get_first_not_published(pool: &SqlitePool) -> Result<Option<Tip>, CustomError>{
+    pub async fn read_not_published(pool: &SqlitePool) -> Result<Option<Tip>, CustomError>{
         let sql = "SELECT * FROM tips WHERE published = FALSE ORDER BY id LIMIT 1";
         query(sql)
             .map(Self::from_row)

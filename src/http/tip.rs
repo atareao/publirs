@@ -83,7 +83,7 @@ async fn delete(
 async fn first_tip(
     State(app_state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, CustomError>{
-    match Tip::get_first_not_published(&app_state.pool).await?{
+    match Tip::read_not_published(&app_state.pool).await?{
         Some(tip) => Ok((StatusCode::OK, Json(serde_json::to_value(tip).unwrap())).into_response()),
         None => Err(CustomError::NotFound),
     }
