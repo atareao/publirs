@@ -1,6 +1,7 @@
 mod publish;
 mod category;
 mod poll;
+mod tip;
 
 use std::{sync::Arc, net::{SocketAddr, Ipv4Addr}};
 use axum::Server;
