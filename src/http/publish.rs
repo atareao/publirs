@@ -12,7 +12,11 @@ use tracing::debug;
 
 use crate::models::{
     category::Category,
-    tip::Tip,
+    tip::{
+        Tip,
+        NewTip,
+        NewTipWithCategory,
+    },
     poll::{
         Poll,
         NewPoll,
@@ -38,6 +42,12 @@ pub fn router() -> Router<Arc<AppState>>{
         .route("/api/v1/create_poll",
             routing::post(create_poll)
         )
+        .route("/api/v1/publish_tip",
+            routing::get(publish_tip)
+        )
+        .route("/api/v1/create_tip",
+            routing::post(create_tip)
+        )
 }
 async fn publish_tip(
     State(app_state): State<Arc<AppState>>,
@@ -62,6 +72,19 @@ async fn publish_tip(
         }
 
     }
+}
+
+async fn create_tip(
+    State(app_state): State<Arc<AppState>>,
+    Json(new_tip): Json<NewTipWithCategory>,
+) -> Result<impl IntoResponse, CustomError>{
+    let category = Category::search(
+        &app_state.pool,
+        &new_tip.category)
+        .await?;
+    let new_tip = NewTip::new(category.get_id(), new_tip.text);
+    let tip = Tip::create(&app_state.pool, new_tip).await?;
+    Ok((StatusCode::OK, Json(tip)).into_response())
 }
 
 async fn publish_poll(
@@ -96,6 +119,7 @@ async fn publish_poll(
         }
     }
 }
+
 async fn create_poll(
     State(app_state): State<Arc<AppState>>,
     Json(new_pollwa): Json<NewPollWithAnswers>,

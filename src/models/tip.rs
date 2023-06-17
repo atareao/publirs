@@ -19,8 +19,25 @@ pub struct NewTip{
     published: bool
 }
 
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct NewTipWithCategory{
+    pub category: String,
+    pub text: String,
+}
+
 fn get_default_published() -> bool{
     false
+}
+
+impl NewTip{
+    pub fn new(category_id: i64, text: String) -> Self{
+        Self{
+            category_id,
+            text,
+            published: false,
+        }
+    }
 }
 
 impl Tip{
