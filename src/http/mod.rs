@@ -26,6 +26,9 @@ impl AppState {
 pub async fn serve(pool: &SqlitePool, token: &str, port: u16) -> anyhow::Result<()> {
     let app_state = AppState::new(pool, token);
     let app = publish::router()
+        .merge(category::router())
+        .merge(poll::router())
+        .merge(tip::router())
         .with_state(Arc::new(app_state))
         .layer(TraceLayer::new_for_http());
 
