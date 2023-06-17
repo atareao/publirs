@@ -56,7 +56,11 @@ async fn publish_tip(
         Some(tip) => {
             debug!("Tip: {:?}", tip);
             let category = Category::read(&app_state.pool, tip.get_category_id()).await?;
-            let message = format!("Tip:\n{}\n#{}", tip.get_text(), category.get_name());
+            let message = format!(
+                "<i>Tip</i>: <b>{}</b>\n{}\n#{}",
+                tip.get_title(),
+                tip.get_text(),
+                category.get_name());
             let telegram = Telegram::new(&app_state.token);
             telegram.send_message(
                 category.get_chat_id(),
@@ -82,7 +86,7 @@ async fn create_tip(
         &app_state.pool,
         &new_tip.category)
         .await?;
-    let new_tip = NewTip::new(category.get_id(), new_tip.text);
+    let new_tip = NewTip::new(category.get_id(), new_tip.title, new_tip.text);
     let tip = Tip::create(&app_state.pool, new_tip).await?;
     Ok((StatusCode::OK, Json(tip)).into_response())
 }
