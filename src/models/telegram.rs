@@ -2,6 +2,8 @@ use reqwest::Client;
 use serde_json::json;
 use tracing::{info, error};
 
+use super::error::CustomError;
+
 #[derive(Debug)]
 pub struct Telegram {
     token: String,
@@ -14,7 +16,7 @@ impl Telegram {
         }
     }
 
-    pub async fn send_message(&self, chat_id: &str, thread_id: i64, message: &str) -> Result<String, String>{
+    pub async fn send_message(&self, chat_id: &str, thread_id: i64, message: &str) -> Result<String, CustomError>{
         let url = format!("https://api.telegram.org/bot{}/sendMessage",
             self.token);
         let message = json!({
@@ -36,12 +38,12 @@ impl Telegram {
                 Err(error) => {
                     error!("No he podido enviar el mensaje a Telegram: {}",
                         error.to_string());
-                    Err(error.to_string())
+                    Err(CustomError::OtherError(error.to_string()))
                 },
             }
     }
 
-    pub async fn send_poll(&self, chat_id: &str, thread_id: i64, question: &str, options: Vec<&str>, correct_option_id: i64) -> Result<String, String>{
+    pub async fn send_poll(&self, chat_id: &str, thread_id: i64, question: &str, options: Vec<&str>, correct_option_id: i64) -> Result<String, CustomError>{
         let url = format!("https://api.telegram.org/bot{}/sendPoll",
             self.token);
         let message = json!({
@@ -68,7 +70,7 @@ impl Telegram {
                 Err(error) => {
                     error!("No he podido enviar el mensaje a Telegram: {}",
                         error.to_string());
-                    Err(error.to_string())
+                    Err(CustomError::OtherError(error.to_string()))
                 },
             }
     }
