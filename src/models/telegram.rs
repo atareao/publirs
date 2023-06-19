@@ -17,6 +17,7 @@ impl Telegram {
     }
 
     pub async fn send_message(&self, chat_id: &str, thread_id: i64, message: &str) -> Result<String, CustomError>{
+        tracing::debug!("Send message");
         let url = format!("https://api.telegram.org/bot{}/sendMessage",
             self.token);
         let message = json!({
@@ -25,6 +26,7 @@ impl Telegram {
             "text": message,
             "parse_mode": "HTML",
         });
+        tracing::debug!("Message: {}", &message);
         match Client::new()
             .post(url)
             .json(&message)
@@ -44,6 +46,7 @@ impl Telegram {
     }
 
     pub async fn send_poll(&self, chat_id: &str, thread_id: i64, question: &str, options: Vec<&str>, correct_option_id: i64) -> Result<String, CustomError>{
+        tracing::debug!("Send poll");
         let url = format!("https://api.telegram.org/bot{}/sendPoll",
             self.token);
         let message = json!({
@@ -57,6 +60,7 @@ impl Telegram {
             "correct_option_id": correct_option_id,
             "parse_mode": "HTML",
         });
+        tracing::debug!("Message: {}", &message);
         match Client::new()
             .post(url)
             .json(&message)
