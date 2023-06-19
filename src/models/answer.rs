@@ -49,14 +49,6 @@ impl Answer{
         }
     }
 
-    pub fn get_id(&self) -> i64{
-        self.id
-    }
-
-    pub fn get_poll_id(&self) -> i64{
-        self.poll_id
-    }
-
     pub fn get_text(&self) -> &str{
         &self.text
     }
