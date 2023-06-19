@@ -30,7 +30,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/api/v1/categories",
             routing::put(update)
         )
-        .route("/api/v1/channels",
+        .route("/api/v1/categories",
             routing::delete(delete)
         )
 }

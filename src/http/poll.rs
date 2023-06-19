@@ -10,12 +10,9 @@ use axum::{
 
 use crate::{
     http::AppState,
-    models::{
-        poll::{
-            Poll,
-            NewPoll,
-        },
-        error::CustomError
+    models::poll::{
+        Poll,
+        NewPoll,
     }
 };
 
@@ -33,7 +30,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/api/v1/polls",
             routing::put(update)
         )
-        .route("/api/v1/channels",
+        .route("/api/v1/polls",
             routing::delete(delete)
         )
 }
@@ -49,16 +46,8 @@ async fn create(
             e.into_response()
         }
     }
-
 }
 
-async fn read2(
-    State(app_state): State<Arc<AppState>>,
-    Path(poll_id): Path<i64>,
-) -> Result<impl IntoResponse, CustomError>{
-    let poll =  Poll::read(&app_state.pool, poll_id).await?;
-    Ok((StatusCode::OK, Json(serde_json::to_value(poll).unwrap())).into_response())
-}
 async fn read(
     State(app_state): State<Arc<AppState>>,
     Path(poll_id): Path<i64>,
