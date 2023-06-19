@@ -36,6 +36,9 @@ use tracing;
 
 pub fn router() -> Router<Arc<AppState>>{
     Router::new()
+        .route("/api/v1/status",
+            routing::get(get_status)
+        )
         .route("/api/v1/publish_poll",
             routing::get(publish_poll)
         )
@@ -49,15 +52,26 @@ pub fn router() -> Router<Arc<AppState>>{
             routing::post(create_tip)
         )
 }
+
+async fn get_status() -> impl IntoResponse{
+    let msg = serde_json::json!({
+        "code": 200,
+        "success": true,
+        "message": "up and running",
+        "payload": {},
+    });
+    (StatusCode::OK, Json(msg)).into_response()
+}
+
 async fn publish_tip(
     State(app_state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, CustomError>{
     match Tip::read_not_published(&app_state.pool).await?{
-        Some(tip) => {
+        Some(mut tip) => {
             debug!("Tip: {:?}", tip);
             let category = Category::read(&app_state.pool, tip.get_category_id()).await?;
             let message = format!(
-                "<i>Tip</i>: <b>{}</b>\n{}\n#{}",
+                "<i>Tip</i>: <b>{}</b>\n\n{}\n\n#{}",
                 tip.get_title(),
                 tip.get_text(),
                 category.get_name());
@@ -68,6 +82,9 @@ async fn publish_tip(
                 &message
             ).await?;
             tracing::info!("Send tip");
+            tip.set_published(true);
+            tracing::debug!("Tip: {:?}", tip);
+            Tip::update(&app_state.pool, tip).await?;
             Ok(StatusCode::OK)
         },
         None => {
@@ -95,7 +112,7 @@ async fn publish_poll(
     State(app_state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, CustomError>{
     match Poll::read_not_published(&app_state.pool).await?{
-        Some(poll) => {
+        Some(mut poll) => {
             debug!("Poll: {:?}", poll);
             let category = Category::read(&app_state.pool, poll.get_category_id()).await?;
             let answers = Answer::read_for_poll(&app_state.pool, poll.get_id()).await?;
@@ -115,6 +132,10 @@ async fn publish_poll(
                 options,
                 correct_option_id
             ).await?;
+            tracing::info!("Send poll");
+            poll.set_published(true);
+            tracing::debug!("Tip: {:?}", poll);
+            Poll::update(&app_state.pool, poll).await?;
             Ok(StatusCode::OK)
         },
         None => {
