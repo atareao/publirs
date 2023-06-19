@@ -86,6 +86,10 @@ impl Poll{
         self.published
     }
 
+    pub fn set_published(&mut self, published: bool){
+        self.published = published;
+    }
+
     pub async fn create(pool: &SqlitePool, new_poll: NewPoll)
             -> Result<Poll, CustomError>{
         tracing::info!("Data: {:?}", new_poll);
