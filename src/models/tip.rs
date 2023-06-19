@@ -55,10 +55,6 @@ impl Tip{
         }
     }
 
-    pub fn get_id(&self) -> i64{
-        self.id
-    }
-
     pub fn get_category_id(&self) -> i64{
         self.category_id
     }
@@ -71,14 +67,15 @@ impl Tip{
         &self.text
     }
 
-    pub fn get_published(&self) -> bool{
-        self.published
+    pub fn set_published(&mut self, publised: bool
+    ){
+        self.published = publised;
     }
 
     pub async fn create(pool: &SqlitePool, new_tip: NewTip)
             -> Result<Tip, CustomError>{
         tracing::info!("Data: {:?}", new_tip);
-        let sql = "INSERT INTO tips (category_id, title, text, published
+        let sql = "INSERT INTO tips (category_id, title, text, published)
                    VALUES ($1, $2, $3, $4) RETURNING *;";
         query(sql)
             .bind(new_tip.category_id)
@@ -128,7 +125,7 @@ impl Tip{
 
     pub async fn update(pool: &SqlitePool, tip: Tip) -> Result<Tip, CustomError>{
         let sql = "UPDATE tips SET category_id = $2, title = $3, text = $4,
-                   published = $5 FROM tips WHERE id = $1 RETURNING * ;";
+                   published = $5 WHERE id = $1 RETURNING * ;";
         query(sql)
             .bind(tip.id)
             .bind(tip.category_id)
@@ -139,6 +136,7 @@ impl Tip{
             .fetch_one(pool)
             .await
             .map_err(|e| {
+                tracing::error!("Error: {}", e);
                 CustomError::ServerError(e.to_string())
             })
     }
