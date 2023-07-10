@@ -140,16 +140,18 @@ impl Poll{
     }
 
     pub async fn update(pool: &SqlitePool, poll: Poll) -> Result<Poll, CustomError>{
-        let sql = "UPDATE polls SET category_id = $2, question = $3
-                    FROM polls WHERE id = $1 RETURNING * ;";
+        let sql = "UPDATE polls SET category_id = $2, question = $3,
+                    published = $4 WHERE id = $1 RETURNING * ;";
         query(sql)
             .bind(poll.id)
             .bind(poll.category_id)
             .bind(poll.question)
+            .bind(poll.published)
             .map(Self::from_row)
             .fetch_one(pool)
             .await
             .map_err(|e| {
+                tracing::error!("Error: {}", e);
                 CustomError::ServerError(e.to_string())
             })
     }
