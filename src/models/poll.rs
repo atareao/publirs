@@ -118,13 +118,13 @@ impl Poll{
     }
 
     pub async fn read_not_published(pool: &SqlitePool) -> Result<Option<Poll>, CustomError>{
-        let sql = "SELECT * FROM polls WHERE published = FALSE order by id";
+        let sql = "SELECT * FROM polls WHERE published = FALSE ORDER BY id LIMIT 1";
         query(sql)
             .map(Self::from_row)
             .fetch_optional(pool)
             .await
-            .map_err(|_| {
-                CustomError::NotFound
+            .map_err(|e| {
+                CustomError::ServerError(e.to_string())
             })
     }
 
